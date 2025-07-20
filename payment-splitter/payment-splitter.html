@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Miden Privacy Payment Splitter Demo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #468BE6;
+            --primary-dark: #1A5799;
+            --secondary: #93BFEF;
+            --secondary-dark: #468BE6;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --gray-50: #E9F5FF;
+            --gray-100: #E9F5FF;
+            --gray-200: #93BFEF;
+            --gray-300: #93BFEF;
+            --gray-600: #1A5799;
+            --gray-700: #092F64;
+            --gray-800: #092F64;
+            --gray-900: #1F1F1F;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #468BE6 0%, #1A5799 100%);
+            min-height: 100vh;
+            color: var(--gray-800);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        .demo-header {
+            background: var(--gray-50);
+            padding: 2rem;
+            border-bottom: 1px solid var(--gray-200);
+            border-radius: 20px 20px 0 0;
+        }
+
+        .demo-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--gray-800);
+            margin-bottom: 0.5rem;
+        }
+
+        .demo-description {
+            color: var(--gray-600);
+            line-height: 1.6;
+        }
+
+        .demo-content {
+            padding: 2rem;
+            background: white;
+            border-radius: 0 0 20px 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+
+        .control-section {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 0 0.5rem;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 12px rgba(70, 139, 230, 0.3);
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(70, 139, 230, 0.4);
+        }
+
+        .btn-secondary {
+            background: var(--secondary);
+            color: var(--gray-800);
+            box-shadow: 0 4px 12px rgba(147, 191, 239, 0.3);
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: var(--secondary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(147, 191, 239, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .status-banner {
+            background: linear-gradient(135deg, var(--success), #059669);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-weight: 500;
+        }
+
+        .status-banner.warning {
+            background: linear-gradient(135deg, var(--warning), #d97706);
+        }
+
+        .status-banner.error {
+            background: linear-gradient(135deg, var(--error), #dc2626);
+        }
+
+        .status-icon {
+            font-size: 1.5rem;
+        }
+
+        .split-summary {
+            background: linear-gradient(135deg, var(--gray-50), var(--gray-100));
+            border: 2px solid var(--primary);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .split-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--gray-700);
+            margin-bottom: 1.5rem;
+        }
+
+        .split-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--gray-600);
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .progress-container {
+            background: var(--gray-200);
+            border-radius: 12px;
+            height: 12px;
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--success), #059669);
+            transition: width 0.5s ease;
+            border-radius: 12px;
+        }
+
+        .progress-text {
+            font-size: 0.9rem;
+            color: var(--gray-600);
+            font-weight: 500;
+        }
+
+        .participants-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .participant-card {
+            background: var(--gray-50);
+            border: 2px solid var(--gray-200);
+            border-radius: 16px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .participant-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+
+        .participant-card.contributed {
+            border-color: var(--success);
+            background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+        }
+
+        .participant-card.pending {
+            border-color: var(--warning);
+            background: linear-gradient(135deg, #fffbeb, #fef3c7);
+        }
+
+        .participant-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .participant-name {
+            font-weight: 600;
+            color: var(--gray-800);
+            font-size: 1.1rem;
+        }
+
+        .participant-status {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-contributed {
+            background: var(--success);
+            color: white;
+        }
+
+        .status-pending {
+            background: var(--warning);
+            color: white;
+        }
+
+        .participant-details {
+            text-align: center;
+        }
+
+        .privacy-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--gray-100);
+            color: var(--gray-700);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-top: 0.5rem;
+        }
+
+        .privacy-icon {
+            color: var(--success);
+            font-size: 1.1rem;
+        }
+
+        .explanation-box {
+            background: linear-gradient(135deg, var(--gray-50), var(--gray-100));
+            border: 1px solid var(--primary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .explanation-title {
+            font-weight: 600;
+            color: var(--primary-dark);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .explanation-text {
+            color: var(--gray-700);
+            line-height: 1.6;
+        }
+
+        .log-section {
+            background: var(--gray-900);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .log-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            color: white;
+        }
+
+        .log-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .log-container {
+            background: var(--gray-800);
+            border-radius: 8px;
+            padding: 1rem;
+            height: 300px;
+            overflow-y: auto;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
+
+        .log-container::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .log-container::-webkit-scrollbar-track {
+            background: var(--gray-700);
+            border-radius: 4px;
+        }
+
+        .log-container::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 4px;
+        }
+
+        .log-entry {
+            margin-bottom: 0.5rem;
+            padding: 0.25rem 0;
+            color: #e5e7eb;
+        }
+
+        .log-info { color: #60a5fa; }
+        .log-success { color: #34d399; }
+        .log-warning { color: #fbbf24; }
+        .log-error { color: #f87171; }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-top: 3px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .contribution-animation {
+            animation: contribute 0.5s ease-out;
+        }
+
+        @keyframes contribute {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .participants-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .btn {
+                margin: 0.25rem;
+                padding: 0.875rem 1.5rem;
+            }
+
+            .split-stats {
+                grid-template-columns: 1fr 1fr;
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💰 Miden Privacy Payment Splitter</h1>
+            <p>Split bills among friends while keeping individual contributions completely private. Only the total and completion status are public.</p>
+        </div>
+
+        <div class="demo-header">
+            <div class="demo-title">Privacy-Preserving Payment Splitting</div>
+            <div class="demo-description">
+                This demo shows how Miden can split a $120 team dinner among 4 people while keeping each person's contribution amount completely private. Watch the zero-knowledge verification prove everything is correct without revealing individual amounts.
+            </div>
+        </div>
+
+        <div class="demo-content">
+            <div class="control-section">
+                <button id="startDemo" class="btn btn-primary">🚀 Start Demo</button>
+                <button id="verifyBtn" class="btn btn-secondary" disabled>🔍 Verify Split</button>
+            </div>
+
+            <div id="statusBanner" class="status-banner" style="display: none;">
+                <span class="status-icon">💻</span>
+                <span id="statusText">Ready to start</span>
+            </div>
+
+            <div id="explanationBox" class="explanation-box" style="display: none;">
+                <div class="explanation-title">
+                    <span>🎯</span>
+                    What's Happening Now
+                </div>
+                <div id="explanationText" class="explanation-text">
+                    The system is creating a private payment split where individual contributions will remain hidden.
+                </div>
+            </div>
+
+            <div id="splitSummary" class="split-summary" style="display: none;">
+                <div class="split-title" id="splitTitle">Team Dinner</div>
+                
+                <div class="split-stats">
+                    <div class="stat-item">
+                        <div class="stat-value" id="totalAmount">$0.00</div>
+                        <div class="stat-label">Total Bill</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="contributed">$0.00</div>
+                        <div class="stat-label">Contributed</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="remaining">$0.00</div>
+                        <div class="stat-label">Remaining</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="participantCount">0/0</div>
+                        <div class="stat-label">Participants</div>
+                    </div>
+                </div>
+
+                <div class="progress-container">
+                    <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                </div>
+                <div class="progress-text" id="progressText">0% complete</div>
+            </div>
+
+            <div id="participantsGrid" class="participants-grid"></div>
+
+            <div class="log-section">
+                <div class="log-header">
+                    <div class="log-title">🔍 System Activity</div>
+                    <div id="logCount">0 events</div>
+                </div>
+                <div class="log-container" id="logContainer">
+                    <div class="log-entry log-info">Privacy Payment Splitter ready. Individual contributions will remain completely private.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { PrivacyPaymentSplitter } from './payment-splitter.js';
+
+        let splitter = null;
+        let currentSplitId = null;
+        let demoRunning = false;
+        let logCount = 0;
+
+        // Store original console functions
+        const originalLog = console.log;
+        const originalError = console.error;
+
+        function log(message, type = 'info') {
+            const logContainer = document.getElementById('logContainer');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry log-${type}`;
+            logEntry.innerHTML = `[${timestamp}] ${message}`;
+            logContainer.appendChild(logEntry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+            
+            logCount++;
+            document.getElementById('logCount').textContent = `${logCount} events`;
+            
+            originalLog(message);
+        }
+
+        console.log = function(...args) {
+            log(args.join(' '));
+        };
+
+        console.error = function(...args) {
+            log(`ERROR: ${args.join(' ')}`, 'error');
+        };
+
+        function updateStatus(message, type = 'success') {
+            const banner = document.getElementById('statusBanner');
+            const statusText = document.getElementById('statusText');
+            
+            banner.style.display = 'flex';
+            banner.className = `status-banner ${type}`;
+            statusText.textContent = message;
+        }
+
+        function updateExplanation(message) {
+            const box = document.getElementById('explanationBox');
+            const text = document.getElementById('explanationText');
+            
+            box.style.display = 'block';
+            text.textContent = message;
+        }
+
+        function updateSplitSummary(splitStatus) {
+            const summary = document.getElementById('splitSummary');
+            const title = document.getElementById('splitTitle');
+            const totalAmount = document.getElementById('totalAmount');
+            const contributed = document.getElementById('contributed');
+            const remaining = document.getElementById('remaining');
+            const participantCount = document.getElementById('participantCount');
+            const progressFill = document.getElementById('progressFill');
+            const progressText = document.getElementById('progressText');
+
+            summary.style.display = 'block';
+            title.textContent = splitStatus.description;
+            totalAmount.textContent = `$${(splitStatus.totalAmount / 100).toFixed(2)}`;
+            contributed.textContent = `$${(splitStatus.totalContributed / 100).toFixed(2)}`;
+            remaining.textContent = `$${(splitStatus.remainingAmount / 100).toFixed(2)}`;
+            participantCount.textContent = `${splitStatus.contributionCount}/${splitStatus.expectedContributions}`;
+
+            const progress = (splitStatus.totalContributed / splitStatus.totalAmount) * 100;
+            progressFill.style.width = `${Math.min(progress, 100)}%`;
+            progressText.textContent = `${Math.round(progress)}% complete`;
+
+            updateParticipantsGrid(splitStatus.participants);
+        }
+
+        function updateParticipantsGrid(participants) {
+            const grid = document.getElementById('participantsGrid');
+            grid.innerHTML = '';
+
+            participants.forEach(participant => {
+                const card = document.createElement('div');
+                card.className = `participant-card ${participant.hasContributed ? 'contributed' : 'pending'}`;
+                card.id = `participant-${participant.id}`;
+                
+                card.innerHTML = `
+                    <div class="participant-header">
+                        <span class="participant-name">${participant.id}</span>
+                        <span class="participant-status ${participant.hasContributed ? 'status-contributed' : 'status-pending'}">
+                            ${participant.hasContributed ? 'Contributed' : 'Pending'}
+                        </span>
+                    </div>
+                    <div class="participant-details">
+                        <div class="privacy-badge">
+                            <span class="privacy-icon">🔒</span>
+                            <span>${participant.hasContributed ? 'Amount private ✓' : 'Waiting for contribution...'}</span>
+                        </div>
+                    </div>
+                `;
+                
+                grid.appendChild(card);
+            });
+        }
+
+        function animateContribution(participantId) {
+            const card = document.getElementById(`participant-${participantId}`);
+            if (card) {
+                card.classList.add('contribution-animation');
+                setTimeout(() => {
+                    card.classList.remove('contribution-animation');
+                }, 500);
+            }
+        }
+
+        async function startDemo() {
+            if (demoRunning) return;
+
+            demoRunning = true;
+            document.getElementById('startDemo').disabled = true;
+            document.getElementById('verifyBtn').disabled = false;
+            
+            document.getElementById('logContainer').innerHTML = '';
+            logCount = 0;
+            
+            updateStatus('🚀 Starting privacy payment split demonstration...', 'success');
+            updateExplanation('Creating a private payment split for a team dinner. Each person\'s contribution amount will remain completely hidden from everyone else.');
+
+            try {
+                log("🚀 Starting Privacy Payment Splitter Demo", 'info');
+                log("=" + "=".repeat(60), 'info');
+
+                splitter = new PrivacyPaymentSplitter();
+                await splitter.initialize();
+                
+                updateExplanation('System initialized! Now creating a $120 team dinner split among 4 people. Each person will contribute $30, but their individual amounts will stay private.');
+
+                // Create a team dinner split
+                currentSplitId = await splitter.createSplit(
+                    "Team Dinner at Fancy Restaurant",
+                    12000, // $120.00
+                    ['Alice', 'Bob', 'Charlie', 'Diana'],
+                    'equal'
+                );
+
+                log("📊 Private split created - individual amounts will remain hidden", 'info');
+                updateSplitSummary(splitter.getSplitStatus(currentSplitId));
+                
+                updateExplanation('Split created! Watch as each person contributes their share. Notice how you can see the total progress but never the individual amounts.');
+
+                // Simulate contributions over time
+                const participants = ['Alice', 'Bob', 'Charlie', 'Diana'];
+                const amounts = [3000, 3000, 3000, 3000]; // $30 each
+
+                for (let i = 0; i < participants.length; i++) {
+                    await new Promise(resolve => setTimeout(resolve, 3000));
+                    
+                    if (!demoRunning) break;
+
+                    await splitter.addContribution(currentSplitId, participants[i], amounts[i]);
+                    
+                    animateContribution(participants[i]);
+                    
+                    // Update UI
+                    const status = splitter.getSplitStatus(currentSplitId);
+                    updateSplitSummary(status);
+
+                    log(`💰 ${participants[i]} contributed (amount private)`, 'success');
+                    
+                    if (i === participants.length - 1) {
+                        updateExplanation('All contributions received! The split is complete. Now you can verify the integrity without revealing any individual amounts.');
+                    } else {
+                        updateExplanation(`${participants[i]} has contributed! ${participants.length - i - 1} more participants needed. Individual amounts remain private.`);
+                    }
+
+                    if (status.isComplete) {
+                        log("🎉 Split completed! All participants have contributed.", 'success');
+                        break;
+                    }
+                }
+
+                if (demoRunning) {
+                    log("✅ Demo completed successfully!", 'success');
+                    updateStatus('🎉 Split completed successfully!', 'success');
+                }
+
+            } catch (error) {
+                log(`Demo failed: ${error.message}`, 'error');
+                updateStatus('❌ Demo failed - check console', 'error');
+                updateExplanation('Something went wrong during the demonstration. Check the system activity log for details.');
+            }
+        }
+
+        async function verifySplit() {
+            if (!splitter || !currentSplitId) {
+                log("No active split to verify", 'warning');
+                return;
+            }
+
+            try {
+                updateExplanation('Starting zero-knowledge verification! This will prove that all contributions are valid and the split is complete, without revealing any individual amounts.');
+                
+                log("🔍 Starting zero-knowledge verification...", 'info');
+                const result = await splitter.verifySplitIntegrity(currentSplitId);
+                
+                if (result.isValid) {
+                    log("✅ Verification successful: Split is complete and all contributions are valid", 'success');
+                    updateExplanation('Verification complete! The zero-knowledge proof confirms that all contributions are valid and the split is complete, without revealing any individual amounts.');
+                    updateStatus('✅ Verification successful - all contributions valid!', 'success');
+                } else {
+                    log("❌ Verification failed: Issues detected with the split", 'error');
+                    updateExplanation('Verification failed! There may be issues with the split integrity.');
+                    updateStatus('❌ Verification failed', 'error');
+                }
+            } catch (error) {
+                log(`Verification error: ${error.message}`, 'error');
+                updateExplanation('Verification encountered an error. Check the system activity log for details.');
+                updateStatus('❌ Verification error', 'error');
+            }
+        }
+
+        function stopDemo() {
+            demoRunning = false;
+            document.getElementById('startDemo').disabled = false;
+            document.getElementById('verifyBtn').disabled = true;
+            if (splitter) {
+                splitter.cleanup();
+                splitter = null;
+            }
+            currentSplitId = null;
+            updateStatus('⏹️ Demo stopped by user', 'warning');
+            updateExplanation('The demonstration has been stopped. You can restart it anytime to see the privacy features in action.');
+            log('Demo stopped by user', 'warning');
+        }
+
+        document.getElementById('startDemo').addEventListener('click', startDemo);
+        document.getElementById('verifyBtn').addEventListener('click', verifySplit);
+    </script>
+</body>
+</html> 
