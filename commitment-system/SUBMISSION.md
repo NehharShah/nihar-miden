@@ -257,9 +257,3 @@ Three practical extensions:
 1. **Time Utilities**: Built-in functions for working with blockchain timestamps
 2. **Template Scripts**: Library of common Miden script patterns
 3. **Client-Side State Management**: Better abstractions for managing private state
-
-### One Specific Improvement
-
-Create a comprehensive example gallery with complete, working applications that demonstrate different Miden capabilities. Each example should include full source code, step-by-step explanations, common pitfalls, and extension ideas.
-
-This would lower the barrier to entry for developers new to Miden's privacy-first architecture. 
